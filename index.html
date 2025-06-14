@@ -1,105 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic-Tac-Toe</title>
-</head>
-<style>
-    * {
-        padding: 0;
-        margin: 0;
-    }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Multiplayer Tic Tac Toe</title>
 
-    .gameBoard, .bottom-box {
-        width: 30vw;
-        height: 30vw;
-        margin: 20px auto;
-        /* border: 1px solid #000; */
-    }
-    .bottom-box{
-        /* display: none; */
-    }
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
 
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    .gameBoard {
+      width: 30vw;
+      height: 30vw;
+      margin: 20px auto;
+    }
     .gameRow {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
     }
-
     .board-column {
-        border: 1px solid #000;
-        width: 10vw;
-        height: 10vw;
-        /* width: 33%; */
-        display: flex;
-        justify-content: center;
-        align-items: center;
+      border: 1px solid #000;
+      width: 10vw;
+      height: 10vw;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
     }
-
     .board-column img {
-        width: 80%;
-        height: 80%;
+      width: 80%;
+      height: 80%;
     }
-
-    .board-column img {
-        animation: pop 0.3s ease;
-    }
-
     .won {
-        background-color: #91ff91;
+      background-color: #91ff91;
     }
-
     #verdict {
-        text-align: center;
-        background-color: #91ff91;
-        color: #000;
-        padding: 8px;
-        font-size:18px;
-        border-radius: 10px;
+      text-align: center;
+      background-color: #91ff91;
+      color: #000;
+      padding: 5px;
+      margin-top: 10px;
     }
-
-    @keyframes pop {
-        0% {
-            transform: scale(0.5);
-            opacity: 0;
-        }
-
-        100% {
-            transform: scale(1);
-            opacity: 1;
-        }
-    }
-</style>
-
+  </style>
+</head>
 <body>
-    <div class="gameBoard">
-        <div class="gameRow first-row">
-            <div class="board-column first-column" id="00"></div>
-            <div class="board-column second-column" id="01"></div>
-            <div class="board-column third-column" id="02"></div>
-        </div>
-        <div class="gameRow second-row">
-            <div class="board-column first-column" id="10"></div>
-            <div class="board-column second-column" id="11"></div>
-            <div class="board-column third-column" id="12"></div>
-        </div>
-        <div class="gameRow third-row">
-            <div class="board-column first-column" id="20"></div>
-            <div class="board-column second-column" id="21"></div>
-            <div class="board-column third-column" id="22"></div>
-        </div>
+
+  <div class="gameBoard" id="game">
+    <div class="gameRow">
+      <div class="board-column" id="00"></div>
+      <div class="board-column" id="01"></div>
+      <div class="board-column" id="02"></div>
     </div>
-    <div class="bottom-box">
-        <div id="verdict" style="display:none">
-
-        </div>
-        <button onclick="resetGame()" style="display: block; margin: 10px auto;">Restart</button>
+    <div class="gameRow">
+      <div class="board-column" id="10"></div>
+      <div class="board-column" id="11"></div>
+      <div class="board-column" id="12"></div>
     </div>
+    <div class="gameRow">
+      <div class="board-column" id="20"></div>
+      <div class="board-column" id="21"></div>
+      <div class="board-column" id="22"></div>
+    </div>
+    <div id="verdict"></div>
+  </div>
 
+  <script>
+    // TODO: Replace with your own Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHt-zpv-ZOoO6pev1F9ePcYc74idrv0XY",
+      authDomain: "tictactoe-521b6.firebaseapp.com",
+      databaseURL: "https://tictactoe-521b6.firebaseio.com",
+      projectId: "tictactoe-521b6",
+      storageBucket:"tictactoe-521b6.firebasestorage.app",
+      messagingSenderId: "477597023596",
+      appId:"1:477597023596:web:82a65ae08ece55d18b4749"
+    };
 
+    // Firebase init
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Game state
+    const PLAYER_ONE = "X";
+    const PLAYER_TWO = "O";
+    let board = [
+      ["", "", ""],
+      ["", "", ""],
+      ["", "", ""]
+    ];
+    let gameCompleted = false;
+    let isPlayerOne = true;
+    let roomId = prompt("Enter Room Code (e.g. abc123):") || "room1";
+    const roomRef = db.ref('games/' + roomId);
+
+    // UI and interaction
+    document.querySelectorAll('.board-column').forEach((cell) => {
+      cell.addEventListener('click', () => {
+        const id = cell.id;
+        const row = id[0], col = id[1];
+        if (board[row][col] === "" && !gameCompleted) {
+          const symbol = isPlayerOne ? PLAYER_ONE : PLAYER_TWO;
+          board[row][col] = symbol;
+          isPlayerOne = !isPlayerOne;
+          roomRef.set({
+            board: board,
+            currentTurn: isPlayerOne ? PLAYER_ONE : PLAYER_TWO,
+            winner: checkWinner()
+          });
+        }
+      });
+    });
+
+    // Listen for changes
+    roomRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (!data) return;
+      board = data.board;
+      isPlayerOne = data.currentTurn === PLAYER_ONE;
+      renderBoard();
+      if (data.winner && !gameCompleted) {
+        gameCompleted = true;
+        document.getElementById("verdict").innerText = 
+          data.winner === "Draw" ? "It's a Draw!" : (data.winner === PLAYER_ONE ? "Player One Won!" : "Player Two Won!");
+      }
+    });
+
+    function renderBoard() {
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          const cell = document.getElementById(`${i}${j}`);
+          cell.innerHTML = '';
+          if (board[i][j] !== "") {
+            const img = document.createElement('img');
+            img.src = board[i][j] === PLAYER_ONE ? './TicTacToe_Cross.png' : './TicTacToe_Circle.png';
+            cell.appendChild(img);
+          }
+        }
+      }
+    }
+
+    function checkWinner() {
+      const winCombos = [
+        [[0,0], [0,1], [0,2]],
+        [[1,0], [1,1], [1,2]],
+        [[2,0], [2,1], [2,2]],
+        [[0,0], [1,0], [2,0]],
+        [[0,1], [1,1], [2,1]],
+        [[0,2], [1,2], [2,2]],
+        [[0,0], [1,1], [2,2]],
+        [[0,2], [1,1], [2,0]]
+      ];
+      for (let combo of winCombos) {
+        const [a, b, c] = combo;
+        const val = board[a[0]][a[1]];
+        if (val && val === board[b[0]][b[1]] && val === board[c[0]][c[1]]) {
+          highlightWinner(a, b, c);
+          return val;
+        }
+      }
+
+      // Check for draw
+      if (board.flat().every(cell => cell !== "")) {
+        return "Draw";
+      }
+      return "";
+    }
+
+    function highlightWinner(a, b, c) {
+      [a, b, c].forEach(([r, c]) => {
+        document.getElementById(`${r}${c}`).classList.add('won');
+      });
+    }
+  </script>
 
 </body>
-<script src="./script.js"></script>
-
 </html>

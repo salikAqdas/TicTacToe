@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+</head>
+<style>
+    * {
+        padding: 0;
+        margin: 0;
+    }
+
+    .gameBoard, .bottom-box {
+        width: 30vw;
+        height: 30vw;
+        margin: 20px auto;
+        /* border: 1px solid #000; */
+    }
+    .bottom-box{
+        /* display: none; */
+    }
+
+    .gameRow {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .board-column {
+        border: 1px solid #000;
+        width: 10vw;
+        height: 10vw;
+        /* width: 33%; */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .board-column img {
+        width: 80%;
+        height: 80%;
+    }
+
+    .board-column img {
+        animation: pop 0.3s ease;
+    }
+
+    .won {
+        background-color: #91ff91;
+    }
+
+    #verdict {
+        text-align: center;
+        background-color: #91ff91;
+        color: #000;
+        padding: 8px;
+        font-size:18px;
+        border-radius: 10px;
+    }
+
+    @keyframes pop {
+        0% {
+            transform: scale(0.5);
+            opacity: 0;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+</style>
+
+<body>
+    <div class="gameBoard">
+        <div class="gameRow first-row">
+            <div class="board-column first-column" id="00"></div>
+            <div class="board-column second-column" id="01"></div>
+            <div class="board-column third-column" id="02"></div>
+        </div>
+        <div class="gameRow second-row">
+            <div class="board-column first-column" id="10"></div>
+            <div class="board-column second-column" id="11"></div>
+            <div class="board-column third-column" id="12"></div>
+        </div>
+        <div class="gameRow third-row">
+            <div class="board-column first-column" id="20"></div>
+            <div class="board-column second-column" id="21"></div>
+            <div class="board-column third-column" id="22"></div>
+        </div>
+    </div>
+    <div class="bottom-box">
+        <div id="verdict" style="display:none">
+
+        </div>
+        <button onclick="resetGame()" style="display: block; margin: 10px auto;">Restart</button>
+    </div>
+
+
+
+</body>
+<script src="./script.js"></script>
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyDHt-zpv-ZOoO6pev1F9ePcYc74idrv0XY",
+    authDomain: "tictactoe-521b6.firebaseapp.com",
+    projectId: "tictactoe-521b6",
+    storageBucket: "tictactoe-521b6.firebasestorage.app",
+    messagingSenderId: "477597023596",
+    appId: "1:477597023596:web:82a65ae08ece55d18b4749",
+    measurementId: "G-MQ79GPBZDW"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+
+</html>
